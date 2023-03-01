@@ -4,6 +4,8 @@ class MRZHelper {
       // minimum length of any MRZ format is 2 lines
       return null;
     }
+// passport have 2 lines for mrz of 44 characters each
+// national ids have 3 lines for mrz of 30 characters each
 
     int lineLength = ableToScanTextList.first.length;
     for (var e in ableToScanTextList) {
