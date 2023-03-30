@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:id_scanner/back_scanning_screen.dart';
 import 'package:id_scanner/front_scanner/front_scanner.dart';
+import 'package:id_scanner/front_scanning_screen.dart';
 import 'package:id_scanner/scan.dart';
 
 void main() {
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const BackScanningScreen(),
-      // home: ScannerScreen(),
+      // home: const FrontScanningScreen(),
     );
   }
 }

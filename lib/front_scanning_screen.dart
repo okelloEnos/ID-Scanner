@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:id_scanner/front_scanner/front_scanner.dart';
 
-class FrontScanningScreen extends StatelessWidget {
+class FrontScanningScreen extends StatefulWidget {
   const FrontScanningScreen({Key? key}) : super(key: key);
 
+  @override
+  State<FrontScanningScreen> createState() => _FrontScanningScreenState();
+}
+
+class _FrontScanningScreenState extends State<FrontScanningScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,17 +43,6 @@ class FrontScanningScreen extends StatelessWidget {
                           )),
                     ),
                   )
-                  // Text('Nationality : ${mrzResult.nationalityCountryCode}'),
-                  // Text('Personal Number : ${mrzResult.personalNumber}'),
-                  // Text('Personal Number 2 : ${mrzResult.personalNumber2}'),
-                  // Text('Document Type : ${mrzResult.documentType}'),
-                  // Text('Surname : ${mrzResult.surnames}'),
-                  // Text('Name : ${mrzResult.givenNames}'),
-                  // Text('Gender : ${mrzResult.sex.name}'),
-                  // Text('CountryCode : ${mrzResult.countryCode}'),
-                  // Text('Date of Birth : ${mrzResult.birthDate}'),
-                  // Text('Expiry Date : ${mrzResult.expiryDate}'),
-                  // Text('DocNum : ${mrzResult.documentNumber}'),
                 ],
               ),
             ),

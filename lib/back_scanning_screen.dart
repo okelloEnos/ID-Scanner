@@ -20,7 +20,8 @@ class _BackScanningScreenState extends State<BackScanningScreen> {
         title: const Text("Back Side Scanning"),
       ),
       body: Builder(builder: (context){
-        return BackSideScanner(
+        return BackIdScanner(
+          controller: controller,
           onSuccess: (mrzResult) async{
             await showDialog(
               context: context,
