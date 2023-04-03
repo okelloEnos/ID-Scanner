@@ -35,7 +35,7 @@ class _BackScanningScreenState extends State<BackScanningScreen> {
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          // controller.currentState?.resetScanning();
+                          controller.currentState?.resetScanning();
                         },
                         child: const Text('Reset Scanning'),
                       ),

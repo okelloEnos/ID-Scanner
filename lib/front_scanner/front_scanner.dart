@@ -7,7 +7,6 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:id_scanner/front_scanner/front_camera_view.dart';
 import 'package:id_scanner/mrz_helper.dart';
 import 'package:id_scanner/painters/face_detector_painter.dart';
-import 'package:mrz_parser/mrz_parser.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as img;
 

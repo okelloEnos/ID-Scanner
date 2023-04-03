@@ -109,9 +109,11 @@ class _BackSideCameraViewState extends State<BackSideCameraView> with SingleTick
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: widget.showOverlay
-          ? BackSideCameraOverlay(child: _liveFeedBody())
-          : _liveFeedBody(),
+      body:
+      // widget.showOverlay
+      //     ? BackSideCameraOverlay(child: _liveFeedBody())
+      //     :
+          _liveFeedBody(),
     );
   }
 

@@ -4,14 +4,13 @@ class ImageScannerAnimation extends AnimatedWidget {
   final bool stopped;
   final double width;
 
-  const ImageScannerAnimation(this.stopped, this.width,
-      {Key? key, required Animation<double> animation})
-      : super(key: key, listenable: animation);
+  const ImageScannerAnimation(this.stopped, this.width, {Key? key, required Animation<double> animation}) : super(key: key, listenable: animation);
 
   @override
   Widget build(BuildContext context) {
     final Animation<double> animation = listenable as Animation<double>;
-    final scorePosition = (animation.value * 200) + width;
+    // final scorePosition = (animation.value * 200) + width;
+    final scorePosition = (animation.value * 600) + 16;
 
     Color color1 = const Color(0x5532CD32);
     Color color2 = const Color(0x0032CD32);
@@ -22,8 +21,11 @@ class ImageScannerAnimation extends AnimatedWidget {
     }
 
     return Positioned(
-        top: scorePosition - 120,
-        left: 16.0,
+        // top: scorePosition - 120,
+      bottom: scorePosition,
+        left: 5.0,
+        right: 5.0,
+        // top: 5.0,
         child: Opacity(
             opacity: (stopped) ? 0.0 : 1.0,
             child: Container(
