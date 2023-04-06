@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
-
+import 'package:image/image.dart' as img;
 import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -18,7 +18,8 @@ class FrontSideCameraView extends StatefulWidget {
     required this.showOverlay,
   }) : super(key: key);
 
-  final Function(InputImage inputImage, File fileImage) onImage;
+  // final Function(InputImage inputImage, File fileImage) onImage;
+  final Function(Uint8List image) onImage;
   final CameraLensDirection initialDirection;
   final bool showOverlay;
 
@@ -35,6 +36,7 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
   bool _animationStopped = false;
   String scanText = "Scan";
   bool scanning = false;
+  bool scanning1 = false;
 
   @override
   void initState() {
@@ -108,9 +110,11 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: widget.showOverlay
-          ? FrontSideCameraOverlay(child: _liveFeedBody())
-          : _liveFeedBody(),
+      body:
+      // widget.showOverlay
+      //     ? FrontSideCameraOverlay(child: _liveFeedBody())
+      //     :
+      _liveFeedBody(),
     );
   }
 
@@ -163,23 +167,6 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
         );
       },
     );
-    // return Container(
-    //   color: Colors.black,
-    //   child: Stack(
-    //     fit: StackFit.expand,
-    //     children: <Widget>[
-    //       Transform.scale(
-    //         scale: scale,
-    //         child: CameraPreview(_controller!),
-    //       ),
-    //       ImageScannerAnimation(
-    //         _animationStopped,
-    //         200,
-    //         animation: _animationController,
-    //       )
-    //     ],
-    //   ),
-    // );
   }
   static const _documentFrameRatio =
   1.42;
@@ -211,7 +198,18 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
       if (!mounted) {
         return;
       }
-      _controller?.startImageStream(_processCameraImage);
+      // _controller?.startImageStream(_processCameraImage);
+      _controller?.startImageStream(capture);
+      // cameraController.startImageStream((image) {
+      //   // Convert the image to a Uint8List
+      //   final bytes = image.planes.first.bytes;
+      //
+      //   // Create an Image widget from the Uint8List
+      //   final imageWidget = Image.memory(bytes);
+      //
+      //   // Display the image widget in your UI
+      // });
+
       setState(() {});
     });
   }
@@ -220,6 +218,26 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
     await _controller?.stopImageStream();
     await _controller?.dispose();
     _controller = null;
+  }
+
+ void  capture(CameraImage cameraImage) {
+    try{
+     if(scanning1){
+       return;
+     }
+     else{
+       img.Image image = img.Image.fromBytes(
+           cameraImage.width, cameraImage.height,
+           cameraImage.planes[0].bytes, format: img.Format.bgra);
+       Uint8List list = Uint8List.fromList(img.encodeJpg(image));
+       widget.onImage(list);
+       scanning1 = true;
+     }
+    }
+    catch(e){
+      throw "Error";
+    }
+
   }
 
   Future _processCameraImage(CameraImage image) async {
@@ -262,9 +280,11 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
     InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
 
 File sFile = await transformImageToFile(bytes);
-print('fffffffffffffffffffffffffffsssssssssssssssssssssssssssss :: ${sFile}');
-    widget.onImage(inputImage, sFile);
+// print('fffffffffffffffffffffffffffsssssssssssssssssssssssssssss :: ${sFile}');
+//     File sFile = await File("POPPPPP.jpg");
+//     widget.onImage(inputImage, sFile);
   }
+
 }
 
 Future<File> transformImageToFile(Uint8List imageList) async {

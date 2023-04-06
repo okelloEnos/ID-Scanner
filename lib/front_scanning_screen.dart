@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:id_scanner/front_scanner/front_scan_controller.dart';
 import 'package:id_scanner/front_scanner/front_scanner.dart';
 
 class FrontScanningScreen extends StatefulWidget {
@@ -9,6 +10,8 @@ class FrontScanningScreen extends StatefulWidget {
 }
 
 class _FrontScanningScreenState extends State<FrontScanningScreen> {
+  final FrontScanningController controller = FrontScanningController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,8 +30,7 @@ class _FrontScanningScreenState extends State<FrontScanningScreen> {
                 children: [
                   TextButton(
                     onPressed: () {
-                      Navigator.pop(context);
-                      // controller.currentState?.resetScanning();
+                      controller.currentState?.resetScanning();
                     },
                     child: const Text('Reset Scanning'),
                   ),
@@ -37,12 +39,47 @@ class _FrontScanningScreenState extends State<FrontScanningScreen> {
                       child: SizedBox(
                           height: 150,
                           width: 200,
-                          child: Image.file(
-                            mrzResult,
-                            fit: BoxFit.contain,
-                          )),
+                          child: SizedBox(
+                              height: 100,
+                              width: 75,
+                              child: Container(
+                                  margin: const EdgeInsets.all(3),
+                                  decoration: const BoxDecoration(
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black54,
+                                        spreadRadius: 1,
+                                        blurRadius: 3,
+                                        offset: Offset(
+                                            3, 3), // changes position of shadow
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(3),
+                                      child: RepaintBoundary(
+                                        child: Container(
+                                            decoration: BoxDecoration(
+                                              image: DecorationImage(
+                                                fit: BoxFit.cover,
+                                                image: MemoryImage(
+                                                    mrzResult),
+                                              ),
+                                            )),
+                                      ))))),
                     ),
                   )
+                  // Card(
+                  //   child: Center(
+                  //     child: SizedBox(
+                  //         height: 150,
+                  //         width: 200,
+                  //         child: Image.file(
+                  //           mrzResult,
+                  //           fit: BoxFit.contain,
+                  //         )),
+                  //   ),
+                  // )
                 ],
               ),
             ),

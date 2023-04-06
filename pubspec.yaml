@@ -38,11 +38,13 @@ dependencies:
   cupertino_icons: ^1.0.2
   google_mlkit_face_detection: ^0.5.0
   google_mlkit_text_recognition: ^0.5.0
-  camera: ^0.10.3+1
+#  camera: ^0.10.3+1
   google_mlkit_commons: ^0.2.0
   camera_platform_interface: ^2.4.1
   path_provider: ^2.0.13
-  image: ^4.0.15
+#  image: ^4.0.15
+  camera: ^0.9.8+1
+  image: ^3.2.0
 
 dev_dependencies:
   flutter_test:

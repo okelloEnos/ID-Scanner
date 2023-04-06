@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,8 @@ class FrontIdScanner extends StatefulWidget {
     this.initialDirection = CameraLensDirection.back,
     this.showOverlay = true,
   }) : super(key: controller);
-  final Function(File) onSuccess;
+  // final Function(File) onSuccess;
+  final Function(Uint8List) onSuccess;
   final CameraLensDirection initialDirection;
   final bool showOverlay;
   @override
@@ -44,36 +46,30 @@ class FrontIdScannerState extends State<FrontIdScanner> {
     return FrontSideCameraView(
       showOverlay: widget.showOverlay,
       initialDirection: widget.initialDirection,
-      // onImage: (imahe){
-      //
-      // },
-      onImage: _processImage,
+      // onImage: _processImage,
+      onImage: capturedImage,
     );
   }
 
-  // void _parseScannedText(List<String> lines) {
-  //   try {
-  //     final data = MRZParser.parse(lines);
-  //     _isBusy = true;
-  //     widget.onSuccess(data);
-  //   } catch (e) {
-  //     _isBusy = false;
-  //   }
-  // }
+  void capturedImage(Uint8List image){
+    widget.onSuccess(image);
+  }
 
   Future<void> _processImage(InputImage inputImage, File image) async {
-    if (!_canProcess) return;
-    if (_isBusy) return;
-    _isBusy = true;
 
-    img.Image? croppedFaceImage = await processImage(inputImage, image);
-
-    if (croppedFaceImage != null) {
-      // _idDetails.setIdImageFace = await convertImageToFile(croppedFaceImage);
-      widget.onSuccess(image);
-    }else {
-      _isBusy = false;
-    }
+    // if (!_canProcess) return;
+    // if (_isBusy) return;
+    // _isBusy = true;
+    // widget.onSuccess(image);
+    // _isBusy = false;
+    // img.Image? croppedFaceImage = await processImage(inputImage, image);
+    //
+    // if (croppedFaceImage != null) {
+    //   // _idDetails.setIdImageFace = await convertImageToFile(croppedFaceImage);
+    //   widget.onSuccess(image);
+    // }else {
+    //   _isBusy = false;
+    // }
   }
 
   Future<img.Image?> processImage(InputImage inputImage, File imageFile) async {
@@ -119,10 +115,10 @@ class FrontIdScannerState extends State<FrontIdScanner> {
 
         if (originalImage != null) {
           if (faceMaps.isNotEmpty) {
-            img.Image faceCrop = img.copyCrop(
-                originalImage,
-                x: faceMaps.first['x']!, y: faceMaps.first['y']!, width: faceMaps.first['w']!, height: faceMaps.first['h']!);
-            faceImage = faceCrop;
+            // img.Image faceCrop = img.copyCrop(
+            //     originalImage,
+            //     x: faceMaps.first['x']!, y: faceMaps.first['y']!, width: faceMaps.first['w']!, height: faceMaps.first['h']!);
+            // faceImage = faceCrop;
           }
         }
       }
