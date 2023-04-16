@@ -1,14 +1,6 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:image/image.dart' as img;
 import 'package:camera/camera.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_commons/google_mlkit_commons.dart';
-import 'package:id_scanner/front_scanner/front_camera_overlay.dart';
-import 'package:id_scanner/widget/scanner_widget.dart';
-import 'package:path_provider/path_provider.dart';
 
 class FrontSideCameraView extends StatefulWidget {
   const FrontSideCameraView({
@@ -18,8 +10,7 @@ class FrontSideCameraView extends StatefulWidget {
     required this.showOverlay,
   }) : super(key: key);
 
-  // final Function(InputImage inputImage, File fileImage) onImage;
-  final Function(Uint8List image) onImage;
+  final Function(File image) onImage;
   final CameraLensDirection initialDirection;
   final bool showOverlay;
 
@@ -117,7 +108,72 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
       _liveFeedBody(),
     );
   }
+  void captureTheImage() async {
+    await _stopStreaming();
+    takePicture().then((XFile? file) {
+      if (mounted) {
+        setState(() {
+          File imageFile = File(file!.path);
+          widget.onImage(imageFile);
+        });
+        if (file != null) {
+          showInSnackBar('Picture saved to ${file.path}');
+        }
+      }
+    });
+  }
+  // void onTakePictureButtonPressed() {
+  //   takePicture().then((XFile? file) {
+  //     if (mounted) {
+  //       setState(() {
+  //         File imageFile = File(file!.path);
+  //         // Take a picture and get the file path
+  //         // final path = await takePicture();
+  //
+  //         // Navigate to the preview screen and pass the file path as an argument
+  //         Navigator.push(
+  //           context,
+  //           MaterialPageRoute(builder: (context) => PreviewScreen(path: file!.path)),
+  //         );
+  //         // widget.onImage(imageFile);
+  //       });
+  //       if (file != null) {
+  //         showInSnackBar('Picture saved to ${file.path}');
+  //       }
+  //     }
+  //   });
+  // }
 
+  Future<XFile?> takePicture() async {
+    final CameraController? cameraController = _controller;
+    if (cameraController == null || !cameraController.value.isInitialized) {
+      showInSnackBar('Error: select a camera first.');
+      return null;
+    }
+
+    if (cameraController.value.isTakingPicture) {
+      // A capture is already pending, do nothing.
+      return null;
+    }
+
+    try {
+      final XFile file = await cameraController.takePicture();
+      return file;
+    } on CameraException catch (e) {
+      _showCameraException(e);
+      return null;
+    }
+  }
+
+  void _showCameraException(CameraException e) {
+    // _logError(e.code, e.description);
+    showInSnackBar('Error: ${e.code}\n${e.description}');
+  }
+
+  void showInSnackBar(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
   void animateScanAnimation(bool reverse) {
     if (reverse) {
       _animationController.reverse(from: 1.0);
@@ -125,6 +181,7 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
       _animationController.forward(from: 0.0);
     }
   }
+
 
   Widget _liveFeedBody() {
     if (_controller?.value.isInitialized == false ||
@@ -147,23 +204,12 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
       builder: (_, c) {
         final overlayRect =
         _calculateOverlaySize(Size(c.maxWidth, c.maxHeight));
-        return Container(
-          color: Colors.black,
-          child: Stack(
-            // fit: StackFit.expand,
-            fit: StackFit.expand,
-            children: <Widget>[
-              Transform.scale(
-                scale: scale,
-                child: CameraPreview(_controller!),
-              ),
-              ImageScannerAnimation(
-                _animationStopped,
-                overlayRect.width,
-                animation: _animationController,
-              )
-            ],
-          ),
+        return Stack(
+          // fit: StackFit.expand,
+          fit: StackFit.expand,
+          children: <Widget>[
+            CameraPreview(_controller!),
+          ],
         );
       },
     );
@@ -198,41 +244,48 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
       if (!mounted) {
         return;
       }
-      // _controller?.startImageStream(_processCameraImage);
-      _controller?.startImageStream(capture);
-      // cameraController.startImageStream((image) {
-      //   // Convert the image to a Uint8List
-      //   final bytes = image.planes.first.bytes;
-      //
-      //   // Create an Image widget from the Uint8List
-      //   final imageWidget = Image.memory(bytes);
-      //
-      //   // Display the image widget in your UI
-      // });
 
+      _controller?.startImageStream(processingLiveImages);
       setState(() {});
     });
   }
 
   Future _stopLiveFeed() async {
-    await _controller?.stopImageStream();
+    await _stopStreaming();
     await _controller?.dispose();
     _controller = null;
   }
 
- void  capture(CameraImage cameraImage) {
+  Future _stopStreaming() async {
+    await _controller?.stopImageStream();
+  }
+
+  // void  captureFile(CameraImage cameraImage) async{
+  //   try{
+  //     if(scanning1){
+  //       return;
+  //     }
+  //     else{
+  //       await _stopStreaming();
+  //       onTakePictureButtonPressed();
+  //       scanning1 = true;
+  //     }
+  //   }
+  //   catch(e){
+  //     throw "Error";
+  //   }
+  //
+  // }
+
+  void  processingLiveImages(CameraImage cameraImage) {
     try{
-     if(scanning1){
-       return;
-     }
-     else{
-       img.Image image = img.Image.fromBytes(
-           cameraImage.width, cameraImage.height,
-           cameraImage.planes[0].bytes, format: img.Format.bgra);
-       Uint8List list = Uint8List.fromList(img.encodeJpg(image));
-       widget.onImage(list);
-       scanning1 = true;
-     }
+      if(scanning1){
+        return;
+      }
+      else{
+        captureTheImage();
+        scanning1 = true;
+      }
     }
     catch(e){
       throw "Error";
@@ -240,64 +293,4 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
 
   }
 
-  Future _processCameraImage(CameraImage image) async {
-    final WriteBuffer allBytes = WriteBuffer();
-    for (final Plane plane in image.planes) {
-      allBytes.putUint8List(plane.bytes);
-    }
-    final bytes = allBytes.done().buffer.asUint8List();
-
-    final Size imageSize =
-    Size(image.width.toDouble(), image.height.toDouble());
-
-    final camera = cameras[_cameraIndex];
-    final imageRotation =
-    InputImageRotationValue.fromRawValue(camera.sensorOrientation);
-    if (imageRotation == null) return;
-
-    final inputImageFormat =
-    InputImageFormatValue.fromRawValue(image.format.raw);
-    if (inputImageFormat == null) return;
-
-    final planeData = image.planes.map(
-          (Plane plane) {
-        return InputImagePlaneMetadata(
-          bytesPerRow: plane.bytesPerRow,
-          height: plane.height,
-          width: plane.width,
-        );
-      },
-    ).toList();
-
-    final inputImageData = InputImageData(
-      size: imageSize,
-      imageRotation: imageRotation,
-      inputImageFormat: inputImageFormat,
-      planeData: planeData,
-    );
-
-    final inputImage =
-    InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
-
-File sFile = await transformImageToFile(bytes);
-// print('fffffffffffffffffffffffffffsssssssssssssssssssssssssssss :: ${sFile}');
-//     File sFile = await File("POPPPPP.jpg");
-//     widget.onImage(inputImage, sFile);
-  }
-
-}
-
-Future<File> transformImageToFile(Uint8List imageList) async {
-  Directory tempDir = await getTemporaryDirectory();
-  String tempPath = tempDir.path;
-  int timestamp = DateTime.now().millisecondsSinceEpoch;
-  String uniquePath = timestamp.toString();
-  var storagePath = "$tempPath/$uniquePath.jpg";
-  File imageFile = File(storagePath);
-  if (!await imageFile.exists()) {
-    imageFile.create(recursive: true);
-  }
-  imageFile.writeAsBytes(imageList);
-
-  return imageFile;
 }

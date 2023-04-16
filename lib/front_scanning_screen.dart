@@ -34,52 +34,7 @@ class _FrontScanningScreenState extends State<FrontScanningScreen> {
                     },
                     child: const Text('Reset Scanning'),
                   ),
-                  Card(
-                    child: Center(
-                      child: SizedBox(
-                          height: 150,
-                          width: 200,
-                          child: SizedBox(
-                              height: 100,
-                              width: 75,
-                              child: Container(
-                                  margin: const EdgeInsets.all(3),
-                                  decoration: const BoxDecoration(
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black54,
-                                        spreadRadius: 1,
-                                        blurRadius: 3,
-                                        offset: Offset(
-                                            3, 3), // changes position of shadow
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(3),
-                                      child: RepaintBoundary(
-                                        child: Container(
-                                            decoration: BoxDecoration(
-                                              image: DecorationImage(
-                                                fit: BoxFit.cover,
-                                                image: MemoryImage(
-                                                    mrzResult),
-                                              ),
-                                            )),
-                                      ))))),
-                    ),
-                  )
-                  // Card(
-                  //   child: Center(
-                  //     child: SizedBox(
-                  //         height: 150,
-                  //         width: 200,
-                  //         child: Image.file(
-                  //           mrzResult,
-                  //           fit: BoxFit.contain,
-                  //         )),
-                  //   ),
-                  // )
+                  Image.file(mrzResult, height: 300, width: 200,),
                 ],
               ),
             ),

@@ -18,8 +18,9 @@ class FrontIdScanner extends StatefulWidget {
     this.initialDirection = CameraLensDirection.back,
     this.showOverlay = true,
   }) : super(key: controller);
-  // final Function(File) onSuccess;
-  final Function(Uint8List) onSuccess;
+  final Function(File) onSuccess;
+  // final Function(Uint8List) onSuccess;
+  // final Function(Widget) onSuccess;
   final CameraLensDirection initialDirection;
   final bool showOverlay;
   @override
@@ -51,9 +52,13 @@ class FrontIdScannerState extends State<FrontIdScanner> {
     );
   }
 
-  void capturedImage(Uint8List image){
+  void capturedImage(File image){
     widget.onSuccess(image);
   }
+
+  // void capturedImage(Uint8List image){
+  //   widget.onSuccess(image);
+  // }
 
   Future<void> _processImage(InputImage inputImage, File image) async {
 
