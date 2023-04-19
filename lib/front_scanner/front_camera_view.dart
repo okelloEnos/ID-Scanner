@@ -1,6 +1,10 @@
 import 'dart:io';
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:id_scanner/painters/face_detector_painter.dart';
+import 'package:image/image.dart' as img;
 
 class FrontSideCameraView extends StatefulWidget {
   const FrontSideCameraView({
@@ -8,6 +12,7 @@ class FrontSideCameraView extends StatefulWidget {
     required this.onImage,
     this.initialDirection = CameraLensDirection.back,
     required this.showOverlay,
+    required VoidCallback resetScanning,
   }) : super(key: key);
 
   final Function(File image) onImage;
@@ -29,6 +34,11 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
   bool scanning = false;
   bool scanning1 = false;
 
+  bool _canProcess = true;
+  bool _isBusy = false;
+
+  void resetScanning() => _isBusy = false;
+
   @override
   void initState() {
     super.initState();
@@ -45,7 +55,7 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
       }
     });
 
-    // onPressed: () {
+
       if (!scanning) {
         animateScanAnimation(false);
         setState(() {
@@ -60,7 +70,7 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
           scanText = "Scan";
         });
       }
-    // },
+
   }
 
   initCamera() async {
@@ -108,34 +118,14 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
       _liveFeedBody(),
     );
   }
-  void captureTheImage() async {
-    await _stopStreaming();
-    takePicture().then((XFile? file) {
-      if (mounted) {
-        setState(() {
-          File imageFile = File(file!.path);
-          widget.onImage(imageFile);
-        });
-        if (file != null) {
-          showInSnackBar('Picture saved to ${file.path}');
-        }
-      }
-    });
-  }
-  // void onTakePictureButtonPressed() {
+
+  // void captureTheImage() async {
+  //   await _stopStreaming();
   //   takePicture().then((XFile? file) {
   //     if (mounted) {
   //       setState(() {
   //         File imageFile = File(file!.path);
-  //         // Take a picture and get the file path
-  //         // final path = await takePicture();
-  //
-  //         // Navigate to the preview screen and pass the file path as an argument
-  //         Navigator.push(
-  //           context,
-  //           MaterialPageRoute(builder: (context) => PreviewScreen(path: file!.path)),
-  //         );
-  //         // widget.onImage(imageFile);
+  //         widget.onImage(imageFile);
   //       });
   //       if (file != null) {
   //         showInSnackBar('Picture saved to ${file.path}');
@@ -143,6 +133,25 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
   //     }
   //   });
   // }
+
+  void captureTheImage() async {
+    await _stopStreaming();
+    XFile? file = await takePicture();
+    if(file != null) {
+      File imageFile = File(file!.path);
+
+      /// process the image for face detection
+      InputImage inputImage = InputImage.fromFilePath(file!.path);
+      int numFaces = await processImage(inputImage);
+      print("Number of faces detected: $numFaces");
+
+      if(numFaces > 0) {
+        widget.onImage(imageFile);
+      } else {
+        startStreaming();
+      }
+    }
+  }
 
   Future<XFile?> takePicture() async {
     final CameraController? cameraController = _controller;
@@ -174,6 +183,7 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
   }
+
   void animateScanAnimation(bool reverse) {
     if (reverse) {
       _animationController.reverse(from: 1.0);
@@ -181,7 +191,6 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
       _animationController.forward(from: 0.0);
     }
   }
-
 
   Widget _liveFeedBody() {
     if (_controller?.value.isInitialized == false ||
@@ -214,6 +223,7 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
       },
     );
   }
+
   static const _documentFrameRatio =
   1.42;
   RRect _calculateOverlaySize(Size size) {
@@ -237,15 +247,17 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
     final camera = cameras[_cameraIndex];
     _controller = CameraController(
       camera,
-      ResolutionPreset.max,
+      ResolutionPreset.low,
       enableAudio: false,
     );
     _controller?.initialize().then((_) {
       if (!mounted) {
         return;
       }
-
-      _controller?.startImageStream(processingLiveImages);
+      _controller?.setFlashMode(FlashMode.off);
+      // _controller?.startImageStream(processingLiveImages);
+      // _controller?.startImageStream(_processImage1);
+      startStreaming();
       setState(() {});
     });
   }
@@ -260,37 +272,86 @@ class _FrontSideCameraViewState extends State<FrontSideCameraView> with SingleTi
     await _controller?.stopImageStream();
   }
 
-  // void  captureFile(CameraImage cameraImage) async{
-  //   try{
-  //     if(scanning1){
-  //       return;
-  //     }
-  //     else{
-  //       await _stopStreaming();
-  //       onTakePictureButtonPressed();
-  //       scanning1 = true;
-  //     }
-  //   }
-  //   catch(e){
-  //     throw "Error";
-  //   }
-  //
-  // }
+  void startStreaming() {
+    _controller?.startImageStream(processingLiveImages);
+  }
 
-  void  processingLiveImages(CameraImage cameraImage) {
+  void processingLiveImages(CameraImage cameraImage) {
+    ///step 1 take a picture
+    ///step 2 process the picture for any faces
+    ///step 3 if face is found then stop the stream and return the image
+    ///step 4 if face is not found then start the stream again
+
     try{
-      if(scanning1){
-        return;
-      }
-      else{
         captureTheImage();
-        scanning1 = true;
-      }
     }
     catch(e){
       throw "Error";
     }
 
+  }
+
+  Future<int> processImage(InputImage inputImage) async {
+    final FaceDetector faceDetector = FaceDetector(
+      options: FaceDetectorOptions(
+        enableContours: true,
+        enableClassification: true,
+      ),
+    );
+    bool canProcess = true;
+    bool isBusy = false;
+    int numberOfFaces = 0;
+
+    int? noOfFaces;
+    img.Image? faceImage;
+
+    if (!canProcess) return 0;
+    if (isBusy) return 0;
+    isBusy = true;
+
+    final faces = await faceDetector.processImage(inputImage);
+    if (inputImage.inputImageData?.size != null &&
+        inputImage.inputImageData?.imageRotation != null) {
+      final painter = FaceDetectorPainter(
+          faces,
+          inputImage.inputImageData!.size,
+          inputImage.inputImageData!.imageRotation);
+    } else {
+      if (faces.isNotEmpty) {
+        List<Map<String, int>> faceMaps = [];
+        for (Face face in faces) {
+          int x = face.boundingBox.left.toInt();
+          int y = face.boundingBox.top.toInt();
+          int w = face.boundingBox.width.toInt();
+          int h = face.boundingBox.height.toInt();
+          Map<String, int> thisMap = {'x': x, 'y': y, 'w': w, 'h': h};
+          faceMaps.add(thisMap);
+        }
+
+        // img.Image? originalImage =
+        // img.decodeImage(File(imageFile.path).readAsBytesSync());
+
+        // if (originalImage != null) {
+        //   if (faceMaps.isNotEmpty) {
+        //     // img.Image faceCrop = img.copyCrop(
+        //     //     originalImage,
+        //     //     x: faceMaps.first['x']!, y: faceMaps.first['y']!, width: faceMaps.first['w']!, height: faceMaps.first['h']!);
+        //     // faceImage = faceCrop;
+        //   }
+        // }
+      }
+
+      noOfFaces = faces.length;
+      numberOfFaces = noOfFaces;
+      print('Number of Faces : $noOfFaces');
+    }
+    isBusy = false;
+
+    return numberOfFaces;
+  }
+
+  void reset(){
+    startStreaming();
   }
 
 }

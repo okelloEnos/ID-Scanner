@@ -18,7 +18,8 @@ class _FrontScanningScreenState extends State<FrontScanningScreen> {
       appBar: AppBar(
         title: const Text("Front Side Scanning"),
       ),
-      body: FrontIdScanner(onSuccess: (mrzResult) async{
+      body: FrontIdScanner(
+        onSuccess: (mrzResult) async{
         await showDialog(
           context: context,
           builder: (context) => Dialog(
@@ -30,7 +31,8 @@ class _FrontScanningScreenState extends State<FrontScanningScreen> {
                 children: [
                   TextButton(
                     onPressed: () {
-                      controller.currentState?.resetScanning();
+                      // controller.currentState?.resetScanning();
+                      resetScanning();
                     },
                     child: const Text('Reset Scanning'),
                   ),
@@ -40,8 +42,11 @@ class _FrontScanningScreenState extends State<FrontScanningScreen> {
             ),
           ),
         );
-      }
-        ,),
+      }, resetScanning: (){},),
     );
+  }
+
+  void resetScanning() {
+    Navigator.pop(context);
   }
 }
