@@ -24,8 +24,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      // home: const BackScanningScreen(),
-      home: const FrontScanningScreen(),
+      home: const BackScanningScreen(),
+      // home: const FrontScanningScreen(),
       // home: const CameraScreenTwo(),
     );
   }

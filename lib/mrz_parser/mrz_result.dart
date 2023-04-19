@@ -58,3 +58,29 @@ class MRZResult {
       personalNumber.hashCode ^
       personalNumber2.hashCode;
 }
+
+class MRZContent {
+  const MRZContent({
+    required this.documentType,
+    required this.countryCode,
+    required this.fullNames,
+    required this.documentNumber,
+    required this.nationalityCountryCode,
+    required this.birthDate,
+    required this.sex,
+    required this.issueOrExpiryDate,
+    required this.personalNumber,
+    this.personalNumber2,
+  });
+
+  final String documentType;
+  final String countryCode;
+  final String fullNames;
+  final String documentNumber;
+  final String nationalityCountryCode;
+  final String birthDate;
+  final String sex;
+  final String issueOrExpiryDate;
+  final String personalNumber;
+  final String? personalNumber2;
+}

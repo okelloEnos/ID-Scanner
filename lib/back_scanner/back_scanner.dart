@@ -20,7 +20,7 @@ class BackIdScanner extends StatefulWidget {
     this.initialDirection = CameraLensDirection.back,
     this.showOverlay = true,
   }) : super(key: controller);
-  final Function(MRZResult) onSuccess;
+  final Function(MRZResult, File) onSuccess;
   final CameraLensDirection initialDirection;
   final bool showOverlay;
   @override
@@ -47,45 +47,50 @@ class BackIdScannerState extends State<BackIdScanner> {
     return BackSideCameraView(
       showOverlay: widget.showOverlay,
       initialDirection: widget.initialDirection,
-      onImage: _processImage,
+      // onImage: _processImage,
+      onImage: capturedImage,
     );
   }
+//
+//   void _parseScannedText(List<String> lines) {
+//     try {
+//       final data = MRZParser.parse(lines);
+//       _isBusy = true;
+//       widget.onSuccess(data);
+//     } catch (e) {
+//       _isBusy = false;
+//     }
+//   }
+//
+//   Future<void> _processImage(InputImage inputImage) async {
+//     if (!_canProcess) return;
+//     if (_isBusy) return;
+//     _isBusy = true;
+//
+//     final recognizedText = await _textRecognizer.processImage(inputImage);
+//     // text recognition
+//     String fullText = recognizedText.text;
+//     // white spaces removal
+//     String trimmedText = fullText.replaceAll(' ', '');
+// // splitting per line
+//     List allText = trimmedText.split('\n');
+//
+//     List<String> ableToScanText = [];
+//     for (var e in allText) {
+//       if (MRZHelper.testTextLine(e).isNotEmpty) {
+//         ableToScanText.add(MRZHelper.testTextLine(e));
+//       }
+//     }
+//     List<String>? result = MRZHelper.getFinalListToParse([...ableToScanText]);
+//
+//     if (result != null) {
+//       _parseScannedText([...result]);
+//     } else {
+//       _isBusy = false;
+//     }
+//   }
 
-  void _parseScannedText(List<String> lines) {
-    try {
-      final data = MRZParser.parse(lines);
-      _isBusy = true;
-      widget.onSuccess(data);
-    } catch (e) {
-      _isBusy = false;
-    }
-  }
-
-  Future<void> _processImage(InputImage inputImage) async {
-    if (!_canProcess) return;
-    if (_isBusy) return;
-    _isBusy = true;
-
-    final recognizedText = await _textRecognizer.processImage(inputImage);
-    // text recognition
-    String fullText = recognizedText.text;
-    // white spaces removal
-    String trimmedText = fullText.replaceAll(' ', '');
-// splitting per line
-    List allText = trimmedText.split('\n');
-
-    List<String> ableToScanText = [];
-    for (var e in allText) {
-      if (MRZHelper.testTextLine(e).isNotEmpty) {
-        ableToScanText.add(MRZHelper.testTextLine(e));
-      }
-    }
-    List<String>? result = MRZHelper.getFinalListToParse([...ableToScanText]);
-
-    if (result != null) {
-      _parseScannedText([...result]);
-    } else {
-      _isBusy = false;
-    }
+  void capturedImage(MRZResult result, File image){
+    widget.onSuccess(result, image);
   }
 }
